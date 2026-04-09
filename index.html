@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>📒 دفتر خزنة الكانتين</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Tahoma;
+  direction: rtl;
+  margin: 0;
+  padding: 10px;
+  background: #f2f2f2;
+}
+
+h1 {
+  text-align: center;
+  font-size: 22px;
+}
+
+/* ===== INPUT BOX ===== */
+.box {
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+input {
+  padding: 10px;
+  font-size: 16px;
+  width: 48%;
+  min-width: 140px; /* لضمان عرض جيد على الموبايل */
+}
+
+button {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  width: 48%;
+  border: none;
+  border-radius: 6px;
+}
+
+button:first-of-type {
+  background: green;
+  color: white;
+}
+
+button:last-of-type {
+  background: red;
+  color: white;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* تعديل عرض الجدول ليتناسب مع الشاشة */
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+th {
+  background: #ddd;
+}
+
+.in { color: green; font-weight: bold; }
+.out { color: red; font-weight: bold; }
+
+/* ===== SUMMARY ===== */
+.summary {
+  background: white;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  input, button {
+    width: 100%;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  /* Adjust table for mobile view */
+  th, td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>📒 دفتر خزنة الكانتين</h1>
+
+<div class="box">
+
+  <input id="serial" placeholder="المسلسل">
+  <input id="income" type="number" placeholder="دخول">
+  <input id="expense" type="number" placeholder="خروج">
+  <input id="date" type="date">
+  <input id="giver" placeholder="المسلم">
+  <input id="receiver" placeholder="المستلم">
+  <input id="reason" placeholder="سبب الصرف">
+  <input id="order" placeholder="الأمر بالصرف">
+  <input id="officer" placeholder="ضابط التوجيه">
+
+  <button onclick="addRow()">➕ إضافة</button>
+  <button onclick="clearAll()">🧹 حذف الكل</button>
+  <button onclick="saveData()">💾 حفظ البيانات</button> <!-- زر الحفظ الجديد -->
+
+</div>
+
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+  <th>المسلسل</th>
+  <th>دخول</th>
+  <th>خروج</th>
+  <th>التاريخ</th>
+  <th>المسلم</th>
+  <th>المستلم</th>
+  <th>سبب الصرف</th>
+  <th>الأمر بالصرف</th>
+  <th>ضابط التوجيه</th>
+  <th>حذف</th>
+</tr>
+</thead>
+
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<div class="summary">
+  إجمالي الدخول: <span id="totalIn">0</span> |
+  إجمالي الخروج: <span id="totalOut">0</span> |
+  الرصيد: <span id="balance">0</span>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("cash")) || [];
+
+function saveData() {
+  localStorage.setItem("cash", JSON.stringify(data));
+  alert("تم حفظ البيانات بنجاح!"); // إشعار بعد الحفظ
+}
+
+function render() {
+
+  let table = document.getElementById("tableBody");
+  table.innerHTML = "";
+
+  let inTotal = 0;
+  let outTotal = 0;
+
+  data.forEach((row, i) => {
+
+    // التأكد من أن الأرقام هي أرقام قبل الحساب
+    inTotal += Number(row.income) || 0;
+    outTotal += Number(row.expense) || 0;
+
+    table.innerHTML += `
+      <tr>
+        <td>${row.serial}</td>
+        <td class="in">${row.income}</td>
+        <td class="out">${row.expense}</td>
+        <td>${row.date}</td>
+        <td>${row.giver}</td>
+        <td>${row.receiver}</td>
+        <td>${row.reason}</td>
+        <td>${row.order}</td>
+        <td>${row.officer}</td>
+        <td><button onclick="deleteRow(${i})">🗑️</button></td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalIn").innerText = inTotal;
+  document.getElementById("totalOut").innerText = outTotal;
+  document.getElementById("balance").innerText = inTotal - outTotal;
+
+}
+
+function addRow() {
+
+  let obj = {
+    serial: serial.value,
+    income: parseFloat(income.value) || 0,  // تحويل النص إلى رقم صحيح
+    expense: parseFloat(expense.value) || 0,  // تحويل النص إلى رقم صحيح
+    date: date.value || new Date().toISOString().split("T")[0],
+    giver: giver.value,
+    receiver: receiver.value,
+    reason: reason.value,
+    order: order.value,
+    officer: officer.value
+  };
+
+  if (!obj.serial) {
+    alert("اكتب المسلسل");
+    return;
+  }
+
+  data.push(obj);
+
+  document.querySelectorAll("input").forEach(i => i.value = "");
+
+  render();
+}
+
+function deleteRow(i) {
+  data.splice(i, 1);
+  saveData();
+  render();
+}
+
+function clearAll() {
+  if (confirm("هل تريد حذف كل البيانات؟")) {
+    data = [];
+    localStorage.removeItem("cash");
+    render();
+  }
+}
+
+window.onload = render;
+
+</script>
+
+</body>
+</html>
