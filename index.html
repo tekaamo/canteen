@@ -264,6 +264,25 @@ function clearAll() {
 window.onload = render;
 
 </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSy...",
+    authDomain: "canteen722-2801f.firebaseapp.com",
+    databaseURL: "https://canteen722-2801f-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "canteen722-2801f",
+    storageBucket: "canteen722-2801f.firebasestorage.app",
+    messagingSenderId: "660705867279",
+    appId: "1:660705867279:web:37c32230755f4d2ec8957a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  console.log("Firebase connected");
+</script>
+  
 </body>
 </html>
